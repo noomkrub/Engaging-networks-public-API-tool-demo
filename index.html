@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en" hola_ext_inject="disabled"><!--<![endif]--><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<title></title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<meta name="keywords" content="">
+	<meta name="description" content="">
+
+	<link rel="icon" type="image/png" sizes="96x96" href="https://aaf1a18515da0e792f78-c27fdabe952dfc357fe25ebf5c8897ee.ssl.cf5.rackcdn.com/1939/favicon.png?v=1445398665000">
+	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+	<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"  />
+	<script src="http://netdna.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<script>
+/*
+TODO :
+- Sort json result descending for some service
+- To customise display with different type of service eg: have summary numbers and percentage calculation on each matrix of EaBroadcastInfo etc
+
+
+
+*/
+function getParameterByName(name) {
+	name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+	var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+		results = regex.exec(location.search);
+	return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+var en_token='YOUR_PUBLIC_TOKEN';
+var url='http://e-activist.com/ea-dataservice/data.service?service=';
+var service=['ActiveJobs','DataCaptureParticipations','IssueResponse','EaEmailAOTarget','EaEmailAOTargetContact','EaEmailNonAOTarget','EaEmailNonAOTargetContact','EaDataCapture','EaSupporterQuestionResponse','EaContactQuestionResponse','NetDonor','IssueSupport','ContactsByParty','AccountReports','GetCampaignWidget','EaAOContactData','EaAOContactDataByPostcode','EaSupporterCount','EaCampaignInfo','EaBroadcastInfo','EaReferenceData','EaPoliticianResponse','FundraisingSummary','RollCall','FundraisingRollCall','P2PTeamSearch','SupporterData'];
+var ActiveJobs={'require':'','option':'','desc':'List of background job'};
+var DataCaptureParticipations={'require':'','option':'','desc':'List of all active data capture campaign with numbers of participation'};
+var IssueResponse={'require':'campaignId','option':['postcode','searchId','supportResponse','resultType'],'desc':'TBD'};
+var EaEmailAOTarget={'require':'campaignId','option':['postcode','searchId','questionName','questionId','questionAnswer','city','region','country','resultType','startRow','endRow'],'desc':'This service returns detail or summmary output of "Email AO target" campaign(s) information for a client based on the received token and parameter(s)'};
+var EaEmailAOTargetContact={'require':'campaignId','option':['postcode','searchId','questionName','questionId','questionAnswer','resultType'],'desc':'This service returns detail output of the contacts for the received campaignId and filter(s)'};
+var EaEmailNonAOTarget={'require':'campaignId','option':['postcode','searchId','constituencyDatabaseName','constituencyDatabaseId','questionName','questionId','questionAnswer','city','region','country','resultType','startRow','endRow'],'desc':'TBD'};
+var EaEmailNonAOTargetContact={'require':'campaignId','option':'resultType','desc':'This service returns detail output of the contacts for the received campaignId and filter(s)'};
+var EaDataCapture={'require':'campaignId','option':['postcode','searchId','constituencyDatabaseName','constituencyDatabaseId','questionName','questionId','questionAnswer','city','region','country','resultType','startRow','endRow'],'desc':'Campaign summary or detail participation(without sensitive data which able to identify individual'};
+var EaSupporterQuestionResponse={'require':'questionId','option':['postcode','searchId','constituencyDatabaseName','constituencyDatabaseId','responseOrder','responseNumber','releaseQuestionId','city','region','country'],'desc':'TBD'};
+var EaContactQuestionResponse={'require':'questionId','option':['postcode','searchId','constituencyDatabaseName','constituencyDatabaseId','responseOrder','responseNumber','releaseQuestionId'],'desc':'TBD'};
+var NetDonor={'require':'campaignId','option':['postcode','searchId','constituencyDatabaseName','constituencyDatabaseId','questionName','questionId','questionAnswer','city','region','country','resultType'],'desc':'Donation campaign summary or detail participation(without sensitive data which able to identify individual) with donation amount and currency'};
+var IssueSupport={'require':['issueId','constituencyDatabaseId'],'option':['resultType','contentType'],'desc':'This service returns detail output of the contacts for the received constituencyDatabaseId who support the received issueId'};
+var ContactsByParty={'require':'constituencyDatabaseId','option':'resultType','desc':'This service returns summary output of the number of candidates by party for the received constituencyDatabaseId'};
+var AccountReports={'require':['startDate','endDate','resultType'],'option':'','desc':'Return number of newjoins, accounttotals, netdonortransactions, netdonoramounts, broadcaststats as defined in resultType'};//(newjoins,accounttotals,netdonortransactions,netdonoramounts,broadcaststats):
+var GetCampaignWidget={'require':'widgetId','option':'ea.tracking.id','desc':'Return structure of action widget in xml or json depend on contentType selection'};
+var EaAOContactData={'require':'constituencyDatabaseId','option':'','desc':'This service returns detail output of the contacts for the received constituencyDatabaseId and filter(s)'};
+var EaAOContactDataByPostcode={'require':['constituencyDatabaseId','postcode'],'option':'','desc':'This service returns detail output of the contacts for the received constituencyDatabaseId and filter(s)'};
+var EaSupporterCount={'require':'','option':'','desc':'This service returns summary output of the number of supporters for a client based on the received token'};
+var EaCampaignInfo={'require':'','option':['campaignId','includeQuestions'],'desc':'This service returns detail output of basic campaign information for a client based on the received token and optional parameters.<br>Will return list of all campaign in system if not define campaignId.<br>If campaignId is defined will return campaign status and useful campaign information'};
+var EaBroadcastInfo={'require':'','option':['broadcastId','startRow','endRow'],'desc':'This service returns detail output of basic broadcast information for a client based on the received token and optional broadcast id(s)<br>Will return list of all campaign in system if not define campaignId.<br>If campaignId is defined will return campaign status and useful campaign information'};
+var EaReferenceData={'require':'referenceDataName','option':'','desc':'This service returns detail output of the reference data for the received referenceDataName'};
+var EaPoliticianResponse={'require':['constituencyDatabaseId','questionId','partyQuestionId','organizationQuestionId'],'option':['postcode','searchId','responseOrder','contentType'],'desc':'This service returns detail output of the question response(s) for politicians based on the received filters'};
+var FundraisingSummary={'require':'campaignId','option':'','desc':'This service returns summary output for net donor actions for a client based on the received token and campaignId(s)'};
+var RollCall={'require':['campaignId','dataSet'],'option':'detailRows','desc':'This service returns detail suporter data for actions for a client based on the received token, campaignId(s), dataSet and detailRows dataSet 1 returns first name and country. dataSet 2 returns first name and city<br>detailRows is number of rows return. Max 20'};
+var FundraisingRollCall={'require':['campaignId','dataSet'],'option':'detailRows','desc':'This service returns detail suporter data for actions for a client based on the received token, campaignId(s), dataSet and detailRows dataSet 1 returns first name and country. dataSet 2 returns first name and city detailRows defaults to 20 (the maximum number of rows this service will return)'};
+var P2PTeamSearch={'require':'','option':'','desc':'TBD'};
+var SupporterData={'require':'email','option':'','desc':'This service returns detail output describing which tagged data fields contain data for the supporter identified by the received email address and token(identifies client)'};
+
+var non='';
+var call_url='';
+var selected_service='';
+	var row_size='';
+	var col_size='';
+	var op;
+var json_obj;
+
+
+function listservice(){
+	var op='<option value=""></option>';
+	for (i=0;i<service.length;i++){
+		op+='<option value="'+service[i]+'">'+service[i]+'</option>';
+		}
+	return('<select id="service">'+op+'</select>');
+	}
+
+function required(service){
+	var req='';
+	var opt='';
+	var s=eval($('#service').val());
+	selected_service=$('#service').val();
+	console.log('selected '+selected_service);
+	$('.desc').html(s['desc']);
+	$('.required').html($('#service').val());
+	console.log(s['require']);
+	if (s['require']===''){}
+	else if (s['require'].constructor === Array){
+		for (i=0;i<s['require'].length;i++){
+			req+=s['require'][i]+' <input name="'+s['require'][i]+'"><br>';
+			}
+		}
+	else {
+		req+=s['require']+' <input name="'+s['require']+'"><br>';
+		}
+	if (s['option']===''){}
+	else if (s['option'].constructor === Array){
+		for (i=0;i<s['option'].length;i++){
+			if (s['option'][i]==='resultType'){
+				opt+=s['option'][i]+'<select name="'+s['option'][i]+'"><option value="summary">summary</option><option value="detail">detail</option></select><br>';
+				}
+			else {
+				opt+=s['option'][i]+' <input name="'+s['option'][i]+'"><br>';
+				}
+			}
+		}
+	else {
+		if (s['option']==='resultType'){
+			opt+=s['option']+'<select name="'+s['option']+'"><option value=""></option><option value="summary">summary</option><option value="detail">detail</option></select><br>';
+			}
+		else if (s['option']==='supportResponse'){
+			opt+=s['option']+'<select name="'+s['option']+'"><option value=""></option><option value="Y">Y</option><option value="N">N</option><option value="U">U</option></select><br>';
+			}
+		else {
+			opt+=s['option']+' <input name="'+s['option']+'"><br>';
+			}
+		}
+
+	$('.required').html(req);
+	$('.option').html(opt);	
+	
+	}
+function render(){
+	console.log('row '+row_size);
+	console.log('col '+col_size);
+	for (i=0;i<row_size;i++){
+		op+='<tr>';
+		for (j=0;j<col_size;j++){
+			op+='<td>'+json_obj.rows[i].columns[j].value+'</td>';
+			}
+		op+='</tr>';
+		}	
+	}
+
+function do_ajax(call_url) {
+	$.ajax({
+		url: call_url,
+		dataType: "jsonp",
+		method:'GET',
+		success: function(data) {
+			json_obj = data;
+			console.log(json_obj);
+			if (json_obj.hasOwnProperty('error')){
+				$('.result').html('<h1 style="color:#f00">ERROR : '+json_obj.error+'</h1>');
+				}
+			else {
+			row_size=Object.keys(json_obj.rows).length;
+			col_size=Object.keys(json_obj.rows[0].columns).length;
+			console.log('row :'+row_size+' col :'+col_size);
+			op='<table border="1"><tr>';
+			for (i=0;i<col_size;i++){
+				op+='<td>'+json_obj.rows[0].columns[i].name+'</td>';
+				}
+			op+='</tr>';
+			//To customise with different type of display eg: have summary numbers and percentage calculation on each matrix of EaBroadcastInfo etc
+			if (selected_service==='ActiveJobs'){render();}
+			else if (selected_service==='DataCaptureParticipations'){render();}
+			else if (selected_service==='IssueResponse'){render();		}
+			else if (selected_service==='EaEmailAOTarget'){render();}
+			else if (selected_service==='EaEmailAOTargetContact'){render();}
+			else if (selected_service==='EaEmailNonAOTarget'){render();}
+			else if (selected_service==='EaEmailNonAOTargetContact'){render();}
+			else if (selected_service==='EaDataCapture'){render();}
+			else if (selected_service==='EaSupporterQuestionResponse'){render();}
+			else if (selected_service==='EaContactQuestionResponse'){render();}
+			else if (selected_service==='NetDonor'){render();}
+			else if (selected_service==='IssueSupport'){render();}
+			else if (selected_service==='ContactsByParty'){render();}
+			else if (selected_service==='AccountReports'){render();}
+			else if (selected_service==='GetCampaignWidget'){render();}
+			else if (selected_service==='EaAOContactData'){render();}
+			else if (selected_service==='EaAOContactDataByPostcode'){render();}
+			else if (selected_service==='EaSupporterCount'){render();}
+			else if (selected_service==='EaCampaignInfo'){render();}
+			else if (selected_service==='EaBroadcastInfo'){render();}	
+			else if (selected_service==='EaReferenceData'){render();}
+			else if (selected_service==='EaPoliticianResponse'){render();}
+			else if (selected_service==='FundraisingSummary'){render();}
+			else if (selected_service==='RollCall'){render();}
+			else if (selected_service==='FundraisingRollCall'){render();}
+			else if (selected_service==='P2PTeamSearch'){render();}
+			else if (selected_service==='SupporterData'){render();}
+			op+='</tr></table>';
+			$('.result').html(op);
+			console.log('done');
+			}
+			
+			}
+		
+		});
+	}
+
+
+$(document).ready(function(){
+	console.log(service.length);
+	$('.service').html(listservice());
+	$('#service').on('change',function(){console.log('changed');required()});
+	$('#acquire').on('click',function(){
+		$('.result').html('Processing........Please wait');
+		if ($('#token').val()){
+			en_token=$('#token').val();
+			}
+		// remove empty form field before resialize
+		$('.mainform').find(":input").each(function(){
+    			if (this.value == '') this.disabled = true;
+			})
+		non=$('form').serialize();
+		if (non!==''){
+			call_url=url+$('#service').val()+'&token='+en_token+'&'+$('.mainform').serialize()+'&contentType=json';
+			console.log(call_url);
+			$('.call_url').html('<a href="'+call_url+'" target="_blank">'+call_url+'</a>');
+			do_ajax(call_url);
+			}
+		else {
+			call_url=url+$('#service').val()+'&token='+en_token+'&contentType=json';
+			console.log(call_url);
+			$('.call_url').html('<a href="'+call_url+'" target="_blank">'+call_url+'</a>');
+			do_ajax(call_url);
+			}
+		});
+
+	});
+
+</script>
+<style>
+td{padding:5px;}
+</style>
+
+  
+</head>
+<body>
+
+<div class="container">
+<div class="row"><div class="col-md-12">&nbsp;</div></div>
+<div class="row"><div class="col-md-1"></div><div class="col-md-10">Token <input type="text" id="token" size="50"></div><div class="col-md-1"></div></div>
+<div class="row">
+
+<div class="col-md-1"></div>
+<div class="col-md-10">
+
+
+<form class='mainform'>
+<div class="row">
+<div class="col-md-12">
+<strong>Select service</strong>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div class="service"></div>
+</div>
+<div class="col-md-8">
+<div class="desc"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-12">
+<strong>Required </strong>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div class="required"></div>
+</div>
+<div class="col-md-8">
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-12">
+<strong>Option </strong>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-6">
+<div class="option"></div>
+</div>
+<div class="col-md-6">
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-12">
+<input type='button' id='acquire' value='proceed'>
+</div>
+</div>
+
+</form>
+
+</div>
+<div class="col-md-1"></div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<div class="call_url"></div>
+</div>
+</div>
+
+
+<div class="result"></div>
+
+
+
+</body></html>
